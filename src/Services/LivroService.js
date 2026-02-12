@@ -18,8 +18,10 @@ const LivroService = {
             }
 
             const livrosLimpos = livros.map(livro => ({
+
                 id: livro.id,
                 titulo: livro.titulo,
+                imagemUrl: livro.imageUrl,
                 anoPublicacao: livro.anoPublicacao,
                 disponivel: livro.disponivel,
                 autor: livro.autor,

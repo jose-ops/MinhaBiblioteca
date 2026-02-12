@@ -1,22 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import LivroService from '../Services/LivroService';
+import './ListaLivros.css';
 //import autorService from '../Services/AutorService';
 
 function ListaLivros() {
 
   const [livros, setLivros] = useState([]); // Inicializa como array vazio
   //const [autor, setautor] = useState([]);
-
   const [searchTerm, setSearchTerm] = useState(""); // Estado para o termo de pesquisa
-
   const [loading, setLoading] = useState(true); // Estado de carregamento
   const [error, setError] = useState(null); // Estado de erro
-
 
   useEffect(() => {
     carregarLivros();
   }, []);
-  // Estado para o termo de pesquisa
 
   const filteredlivros = livros.filter((livro) =>
     livro.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -56,24 +53,17 @@ function ListaLivros() {
 
   return (
     <div className="lista-livros">
-      <div style={{ padding: "20px", fontFamily: "Arial" }}>
-        <h1>📚 Loja de Livros</h1>
-        <input type="text"
-          placeholder="Pesquisar livro..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          style={{
-            padding: "8px",
-            width: "250px",
-            marginBottom: "20px",
-            borderRadius: "5px",
-            border: "1px solid #ccc",
-          }}
-        />
-        <ul>
+      <header>
+        <h2>📚 Minha Biblioteca</h2>
+        <input type="text" placeholder="Pesquisar livro..." value={searchTerm}onChange={(e) => setSearchTerm(e.target.value)} className="search-input" />
+      </header>
+
+        <ul style={{ listStyleType: 'none', padding: 0, margin: 0 }}>
           {filteredlivros.length > 0 ? (
             filteredlivros.map((livro) =>
               <li key={livro.id}>
+                <img src={livro.imagemUrl} alt={livro.titulo} className='imageLivros'/>
+
                 Titulo: {livro.titulo} ||
                 Ano de Publicação: {livro.anoPublicacao} ||
                 autor: {livro.autor.nome} ||
@@ -84,7 +74,7 @@ function ListaLivros() {
             <p>Nenhum livro encontrado.</p>
           )}
         </ul>
-      </div>
+      
     </div>
   );
 }
