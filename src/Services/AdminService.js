@@ -23,9 +23,9 @@ export async function buscarAutores() {
     const response = await fetch('https://localhost:7086/api/autores', {
       headers: { 'Authorization': `Bearer ${token}` }
     });
-    
+
     if (!response.ok) throw new Error('Erro ao buscar autores');
-    
+
     const autores = await response.json();
     console.log('👤 Autores:', autores);
     return autores;
@@ -39,7 +39,7 @@ export async function buscarAutores() {
 export async function buscarTodosLivros() {
   try {
     console.log('📚 Buscando todos os livros...');
-    
+
     const response = await fetch(API_URL, {
       method: 'GET',
       headers: {
@@ -54,7 +54,7 @@ export async function buscarTodosLivros() {
     const livros = await response.json();
     console.log('✅ Livros encontrados:', livros);
     return livros;
-    
+
   } catch (error) {
     console.error('❌ Erro ao buscar livros:', error);
     throw error;
@@ -65,7 +65,7 @@ export async function buscarTodosLivros() {
 export async function buscarLivroPorId(id) {
   try {
     console.log(`📖 Buscando livro ID ${id}...`);
-    
+
     const response = await fetch(`${API_URL}/${id}`, {
       method: 'GET',
       headers: {
@@ -80,7 +80,7 @@ export async function buscarLivroPorId(id) {
     const livro = await response.json();
     console.log('✅ Livro encontrado:', livro);
     return livro;
-    
+
   } catch (error) {
     console.error('❌ Erro ao buscar livro:', error);
     throw error;
@@ -91,7 +91,7 @@ export async function buscarLivroPorId(id) {
 export async function criarLivro(novoLivro) {
   try {
     console.log('➕ Criando novo livro...', novoLivro);
-    
+
     const response = await fetch(API_URL, {
       method: 'POST',
       headers: getHeaders(),
@@ -106,7 +106,7 @@ export async function criarLivro(novoLivro) {
     const livroCriado = await response.json();
     console.log('✅ Livro criado com sucesso:', livroCriado);
     return livroCriado;
-    
+
   } catch (error) {
     console.error('❌ Erro ao criar livro:', error);
     throw error;
@@ -117,7 +117,7 @@ export async function criarLivro(novoLivro) {
 export async function editarLivro(id, dadosAtualizados) {
   try {
     console.log(`✏️ Editando livro ID ${id}...`, dadosAtualizados);
-    
+
     const response = await fetch(`${API_URL}/${id}`, {
       method: 'PUT',
       headers: getHeaders(),
@@ -129,12 +129,33 @@ export async function editarLivro(id, dadosAtualizados) {
       throw new Error(error.message || 'Erro ao editar livro');
     }
 
-    const livroAtualizado = await response.json();
-    console.log('✅ Livro editado com sucesso:', livroAtualizado);
-    return livroAtualizado;
-    
+    console.log('✅ Livro editado com sucesso!');
+    return true;  // Ou simplesmente não retorne nada
+
   } catch (error) {
     console.error('❌ Erro ao editar livro:', error);
+    throw error;
+  }
+}
+
+// Editar descrição do livro
+export async function editarDescricao(livroId, descricao) {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`https://localhost:7086/api/descricoes/${livroId}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(descricao)
+    });
+
+    if (!response.ok) throw new Error('Erro ao editar descrição');
+
+    return await response.json();
+  } catch (error) {
+    console.error('❌ Erro:', error);
     throw error;
   }
 }
@@ -143,7 +164,7 @@ export async function editarLivro(id, dadosAtualizados) {
 export async function deletarLivro(id) {
   try {
     console.log(`🗑️ Deletando livro ID ${id}...`);
-    
+
     const response = await fetch(`${API_URL}/${id}`, {
       method: 'DELETE',
       headers: {
@@ -157,7 +178,7 @@ export async function deletarLivro(id) {
 
     console.log('✅ Livro deletado com sucesso!');
     return true;
-    
+
   } catch (error) {
     console.error('❌ Erro ao deletar livro:', error);
     throw error;
@@ -168,7 +189,7 @@ export async function deletarLivro(id) {
 export async function uploadImagem(livroId, arquivo) {
   try {
     console.log(`📤 Enviando imagem para o livro ID ${livroId}...`);
-    
+
     // Criar FormData para enviar arquivo
     const formData = new FormData();
     formData.append('file', arquivo);
@@ -190,7 +211,7 @@ export async function uploadImagem(livroId, arquivo) {
     const resultado = await response.json();
     console.log('✅ Imagem enviada com sucesso!', resultado);
     return resultado;
-    
+
   } catch (error) {
     console.error('❌ Erro ao fazer upload:', error);
     throw error;
@@ -207,26 +228,9 @@ export function validarLivro(livro) {
     erros.push('Título é obrigatório');
   }
 
-  if(!livro.editora || livro.editora === '') {
-    erros.push('Editora é obrigatória');
-  }
-  if(!livro.idioma || livro.idioma === '') {
-    erros.push('Idioma é obrigatório');
-  }
-
-  if (!livro.numeroPaginas || livro.numeroPaginas <= 0) {
-    erros.push('Número de páginas deve ser maior que zero');
-  }
-
   if (!livro.autorId || livro.autorId === '' || livro.autorId === 0) {
     erros.push('Autor é obrigatório');
   }
-
-  if (!livro.nacionalidade || livro.nacionalidade.trim() === '') {
-    erros.push('Nacionalidade é obrigatória');
-  }
-
-  
 
   return erros;
 }

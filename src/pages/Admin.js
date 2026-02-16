@@ -5,6 +5,7 @@ import {
   buscarTodosLivros,
   criarLivro,
   editarLivro,
+  editarDescricao,
   deletarLivro,
   uploadImagem,
   validarLivro
@@ -25,10 +26,11 @@ function Admin({ onLogout }) {
   const [formulario, setFormulario] = useState({
     titulo: '',
     autorId: '',
-    // ano: new Date().getFullYear(),
-    nacionalidade: '',
-    descricao: '',
-    disponivel: true
+    disponivel: true,
+    // editora: '',
+    // idioma: '',
+    // numeroPaginas: '',
+    // anoPublicacao: ''
   });
 
   // Estados do upload de imagem
@@ -91,11 +93,12 @@ function Admin({ onLogout }) {
   function limparFormulario() {
     setFormulario({
       titulo: '',
-      autor: '',
-      // ano: new Date().getFullYear(),
-      nacionalidade: '',
-      descricao: '',
-      disponivel: true
+      autorId: '',
+      disponivel: true,
+      // editora: '',
+      // idioma: '',
+      // numeroPaginas: '',
+      // anoPublicacao: ''
     });
     setModoEdicao(false);
     setLivroEditando(null);
@@ -105,41 +108,42 @@ function Admin({ onLogout }) {
   async function handleCriarLivro(e) {
     e.preventDefault();
 
-    // Montar objeto correto para o backend
-    const livroParaEnviar = {
+    // ✅ Use o mesmo nome que declarou aqui
+    const livroParaCriar = {  // ← Esse é o nome!
       titulo: formulario.titulo,
-      autorId: parseInt(formulario.autorId), // ← Converte para número
-      // ano: parseInt(formulario.ano),
-      nacionalidade: formulario.nacionalidade,
-      descricao: formulario.descricao,
-      disponivel: formulario.disponivel
+      autorId: parseInt(formulario.autorId),
+      disponivel: formulario.disponivel,
+      // descricao: {
+      //   editora: formulario.editora || null,
+      //   idioma: formulario.idioma || null,
+      //   numeroPaginas: formulario.numeroPaginas ? parseInt(formulario.numeroPaginas) : null,
+      //   anoPublicacao: formulario.anoPublicacao ? parseInt(formulario.anoPublicacao) : null
+      // }
     };
 
-    console.log('📤 Enviando livro:', livroParaEnviar);
+    console.log('📤 Criando:', livroParaCriar);
 
     try {
-      await criarLivro(livroParaEnviar);
-      mostrarMensagem('sucesso', '✅ Livro criado com sucesso!');
+      await criarLivro(livroParaCriar);  // ← Use o mesmo nome aqui!
+      mostrarMensagem('sucesso', '✅ Livro criado!');
       limparFormulario();
       carregarLivros();
     } catch (error) {
-      mostrarMensagem('erro', 'Erro ao criar livro: ' + error.message);
+      mostrarMensagem('erro', 'Erro: ' + error.message);
     }
   }
-
   // ==================== EDITAR LIVRO ====================
   function iniciarEdicao(livro) {
     setModoEdicao(true);
     setLivroEditando(livro);
     setFormulario({
-      titulo: livro.titulo,
-      autorId: livro.autorId,
-      nacionalidade: livro.autor?.nacionalidade,
-      descricao: livro.descricao,
-      editora: livro.descricao?.editora,
-      idioma: livro.descricao?.idioma,
-      numeroPaginas: livro.descricao?.numeroPaginas,
-      disponivel: livro.disponivel
+      titulo: livro.titulo || '',
+      autorId: livro.autorId || '',
+      disponivel: livro.disponivel,
+      // editora: livro.descricao?.editora || '',
+      // idioma: livro.descricao?.idioma || '',
+      // numeroPaginas: livro.descricao?.numeroPaginas || '',
+      // anoPublicacao: livro.descricao?.anoPublicacao || ''
     });
     // Scroll para o formulário
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -148,20 +152,30 @@ function Admin({ onLogout }) {
   async function handleEditarLivro(e) {
     e.preventDefault();
 
-    // Validar dados
     const erros = validarLivro(formulario);
     if (erros.length > 0) {
       mostrarMensagem('erro', erros.join(', '));
       return;
     }
 
+    // ✅ Adicione o ID aqui!
+    const dadosParaEditar = {
+      id: livroEditando.id,        
+      titulo: formulario.titulo,
+      autorId: parseInt(formulario.autorId),
+      disponivel: formulario.disponivel,
+      imageUrl: livroEditando.imageUrl || '',
+    };
+
+    console.log('📤 Editando:', dadosParaEditar);
+
     try {
-      await editarLivro(livroEditando.id, formulario);
-      mostrarMensagem('sucesso', '✅ Livro atualizado com sucesso!');
+      await editarLivro(livroEditando.id, dadosParaEditar);
+      mostrarMensagem('sucesso', '✅ Livro atualizado!');
       limparFormulario();
       carregarLivros();
     } catch (error) {
-      mostrarMensagem('erro', 'Erro ao editar livro: ' + error.message);
+      mostrarMensagem('erro', 'Erro: ' + error.message);
     }
   }
 
@@ -266,53 +280,61 @@ function Admin({ onLogout }) {
                   required
                 />
               </div>
-              <div className="form-group">
-                <label htmlFor="editora">Editora *</label>
+              {/* Ano de Publicação */}
+              {/* <div className="form-group">
+                <label htmlFor="anoPublicacao">Ano de Publicação</label>
+                <input
+                  type="number"
+                  id="anoPublicacao"
+                  name="anoPublicacao"
+                  value={formulario.anoPublicacao}
+                  onChange={handleInputChange}
+                  placeholder="Ex: 1899"
+                />
+              </div> */}
+
+              {/* Editora */}
+              {/* <div className="form-group">
+                <label htmlFor="editora">Editora</label>
                 <input
                   type="text"
                   id="editora"
                   name="editora"
-                  value={formulario.descricao.editora}
+                  value={formulario.editora}
                   onChange={handleInputChange}
-                  placeholder="Ex: Companhia das Letras"
-                  required
+                  placeholder="Ex: FTD"
                 />
-              </div>
+              </div> */}
 
-               <div className="form-group">
-                <label htmlFor="idioma">Idioma *</label>
+              {/* Idioma */}
+              {/* <div className="form-group">
+                <label htmlFor="idioma">Idioma</label>
                 <input
                   type="text"
                   id="idioma"
-                  name="descricao.idioma"
-                  value={formulario.descricao.idioma}
-
+                  name="idioma"
+                  value={formulario.idioma}
                   onChange={handleInputChange}
-                  placeholder="Ex: Companhia das Letras"
-                  required
+                  placeholder="Ex: Português"
                 />
-              </div>
+              </div> */}
 
-               <div className="form-group">
-                <label htmlFor="numeroPaginas">Número de Páginas *</label>
+              {/* Número de Páginas */}
+              {/* <div className="form-group">
+                <label htmlFor="numeroPaginas">Número de Páginas</label>
                 <input
-                  type="text"
+                  type="number"
                   id="numeroPaginas"
-                  name="descricao.numeroPaginas"
-                  value={formulario.descricao.numeroPaginas || ''}
-
+                  name="numeroPaginas"
+                  value={formulario.numeroPaginas}
                   onChange={handleInputChange}
-                  placeholder="Ex: Companhia das Letras"
-                  required
+                  placeholder="Ex: 232"
                 />
-              </div>
-
-           
+              </div> */}
             </div>
-
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="autorId">Autor *</label> 
+                <label htmlFor="autorId">Autor *</label>
                 <select
                   id="autorId"
                   name="autorId"
@@ -327,19 +349,6 @@ function Admin({ onLogout }) {
                     </option>
                   ))}
                 </select>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="nacionalidade">Nacionalidade *</label>
-                <input
-                  type="text"
-                  id="nacionalidade"
-                  name="nacionalidade"
-                  value={formulario.nacionalidade}
-                  onChange={handleInputChange}
-                  placeholder="Ex: Brasileira"
-                  required
-                />
               </div>
             </div>
 
@@ -446,8 +455,6 @@ function Admin({ onLogout }) {
                   <div className="livro-info">
                     <h3>{livro.titulo}</h3>
                     <p><strong>Autor:</strong> {livro.autor?.nome}</p>
-                    
-                    <p><strong>Nacionalidade:</strong> {livro.autor?.nacionalidade} </p>
                     <p><strong>Ano de Publicação:</strong> {livro.descricao?.anoPublicacao}</p>
                     <p><strong>Editora:</strong> {livro.descricao?.editora}</p>
                     <p><strong>Idioma:</strong> {livro.descricao?.idioma}</p>
