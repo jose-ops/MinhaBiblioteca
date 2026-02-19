@@ -37,7 +37,6 @@ const LivroService = {
         }
     },
 
-    // Buscar um livro por ID
     buscarLivroPorId: async (id) => {
         try {
             const response = await axios.get(`${API_URL}/${id}`);

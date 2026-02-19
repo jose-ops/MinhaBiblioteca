@@ -27,7 +27,7 @@ export async function buscarAutores() {
     if (!response.ok) throw new Error('Erro ao buscar autores');
 
     const autores = await response.json();
-    console.log('👤 Autores:', autores);
+    console.log(' Autores:', autores);
     return autores;
   } catch (error) {
     console.error('❌ Erro:', error);
@@ -64,7 +64,7 @@ export async function buscarTodosLivros() {
 // ====================  BUSCAR LIVRO POR ID ====================
 export async function buscarLivroPorId(id) {
   try {
-    console.log(`📖 Buscando livro ID ${id}...`);
+    console.log(`Buscando livro ID ${id}...`);
 
     const response = await fetch(`${API_URL}/${id}`, {
       method: 'GET',
@@ -90,7 +90,7 @@ export async function buscarLivroPorId(id) {
 // ====================  CRIAR NOVO LIVRO ====================
 export async function criarLivro(novoLivro) {
   try {
-    console.log('➕ Criando novo livro...', novoLivro);
+    console.log('Criando novo livro...', novoLivro);
 
     const response = await fetch(API_URL, {
       method: 'POST',
@@ -163,7 +163,7 @@ export async function editarDescricao(livroId, descricao) {
 // ====================  DELETAR LIVRO ====================
 export async function deletarLivro(id) {
   try {
-    console.log(`🗑️ Deletando livro ID ${id}...`);
+    console.log(`Deletando livro ID ${id}...`);
 
     const response = await fetch(`${API_URL}/${id}`, {
       method: 'DELETE',
@@ -188,7 +188,7 @@ export async function deletarLivro(id) {
 // ====================  UPLOAD DE IMAGEM ====================
 export async function uploadImagem(livroId, arquivo) {
   try {
-    console.log(`📤 Enviando imagem para o livro ID ${livroId}...`);
+    console.log(`Enviando imagem para o livro ID ${livroId}...`);
 
     // Criar FormData para enviar arquivo
     const formData = new FormData();

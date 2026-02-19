@@ -5,7 +5,7 @@ import {
   buscarTodosLivros,
   criarLivro,
   editarLivro,
-  editarDescricao,
+  // editarDescricao,
   deletarLivro,
   uploadImagem,
   validarLivro
@@ -108,8 +108,8 @@ function Admin({ onLogout }) {
   async function handleCriarLivro(e) {
     e.preventDefault();
 
-    // ✅ Use o mesmo nome que declarou aqui
-    const livroParaCriar = {  // ← Esse é o nome!
+
+    const livroParaCriar = {  
       titulo: formulario.titulo,
       autorId: parseInt(formulario.autorId),
       disponivel: formulario.disponivel,
@@ -121,7 +121,7 @@ function Admin({ onLogout }) {
       // }
     };
 
-    console.log('📤 Criando:', livroParaCriar);
+    console.log('Criando:', livroParaCriar);
 
     try {
       await criarLivro(livroParaCriar);  // ← Use o mesmo nome aqui!
@@ -158,7 +158,6 @@ function Admin({ onLogout }) {
       return;
     }
 
-    // ✅ Adicione o ID aqui!
     const dadosParaEditar = {
       id: livroEditando.id,        
       titulo: formulario.titulo,
