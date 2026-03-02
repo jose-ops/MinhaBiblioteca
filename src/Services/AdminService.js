@@ -129,9 +129,10 @@ export async function editarLivro(id, dadosAtualizados) {
       throw new Error(error.message || 'Erro ao editar livro');
     }
 
+    // ✅ NÃO tentar ler JSON de 204 No Content!
     console.log('✅ Livro editado com sucesso!');
-    return true;  // Ou simplesmente não retorne nada
-
+    return true; 
+    
   } catch (error) {
     console.error('❌ Erro ao editar livro:', error);
     throw error;
