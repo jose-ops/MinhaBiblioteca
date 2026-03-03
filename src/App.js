@@ -1,49 +1,95 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Home from './pages/Home';
 import Admin from './pages/Admin';
+import EditarLivro from './pages/EditarLivro';
+import { getCurrentUser } from './Services/LoginService';
+import './App.css';
 
 function App() {
-  // 1. Estado que guarda qual tela mostrar
-  const [telaAtual, setTelaAtual] = useState('login');
-  
-  // 2. Função chamada quando login for bem-sucedido
-  function handleLoginSuccess(usuario) {
-    console.log('👤 Usuário logado:', usuario);
-    
-    // 3. Decide qual tela mostrar baseado na role
-    if (usuario.role === 'Admin') {
-      console.log('🔐 É Admin! Indo para tela Admin...');
-      setTelaAtual('admin');
-    } else {
-      console.log('📚 É User! Indo para tela Home...');
-      setTelaAtual('home');
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // Verificar se usuário está logado ao carregar
+  useEffect(() => {
+    const currentUser = getCurrentUser();
+    if (currentUser) {
+      setUser(currentUser);
     }
+    setLoading(false);
+  }, []);
+
+  // Callback de login bem-sucedido
+  function handleLoginSuccess(userData) {
+    setUser(userData);
   }
-  
-  // 4. Função chamada quando usuário faz logout
+
+  // Callback de logout
   function handleLogout() {
-    console.log('👋 Usuário saiu!');
-    setTelaAtual('login');
+    setUser(null);
   }
-  
-  // 5. Renderiza a tela correta baseado no estado
-  console.log('📺 Mostrando tela:', telaAtual);
-  
-  if (telaAtual === 'login') {
-    return <Login onLoginSuccess={handleLoginSuccess} />;
+
+  if (loading) {
+    return <div>Carregando...</div>;
   }
-  
-  if (telaAtual === 'admin') {
-    return <Admin onLogout={handleLogout} />;
-  }
-  
-  if (telaAtual === 'home') {
-    return <Home onLogout={handleLogout} />;
-  }
-  
-  // Caso algo dê errado, volta pro login
-  return <Login onLoginSuccess={handleLoginSuccess} />;
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        {/* Rota de Login */}
+        <Route 
+          path="/" 
+          element={
+            user ? (
+              <Navigate to={user.role === 'Admin' ? '/admin' : '/home'} replace />
+            ) : (
+              <Login onLoginSuccess={handleLoginSuccess} />
+            )
+          } 
+        />
+
+        {/* Rota Home (User) */}
+        <Route 
+          path="/home" 
+          element={
+            user && user.role === 'User' ? (
+              <Home onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/" replace />
+            )
+          } 
+        />
+
+        {/* Rota Admin (Lista de Livros) */}
+        <Route 
+          path="/admin" 
+          element={
+            user && user.role === 'Admin' ? (
+              <Admin onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/" replace />
+            )
+          } 
+        />
+
+        {/* Rota Editar Livro (Admin) */}
+        <Route 
+          path="/admin/editar/:id" 
+          element={
+            user && user.role === 'Admin' ? (
+              <EditarLivro />
+            ) : (
+              <Navigate to="/" replace />
+            )
+          } 
+        />
+
+        {/* Rota 404 - Redireciona pra home */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
 export default App;

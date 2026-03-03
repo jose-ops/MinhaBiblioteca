@@ -1,44 +1,39 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getCurrentUser, logout } from '../Services/LoginService';
-import {
-  buscarAutores,
+import { 
   buscarTodosLivros,
-  criarLivro,
-  editarLivro,
-  // editarDescricao,
-  deletarLivro,
+  buscarAutores,
+  criarLivro, 
+  deletarLivro, 
   uploadImagem,
-  validarLivro
+  validarLivro 
 } from '../Services/AdminService';
 import './Styles/Admin.css';
 
 function Admin({ onLogout }) {
-  // ==================== ESTADOS ====================
+  const navigate = useNavigate();
+  
+  // Estados
   const [user, setUser] = useState(null);
   const [livros, setLivros] = useState([]);
+  const [autores, setAutores] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [mensagem, setMensagem] = useState({ tipo: '', texto: '' });
-  const [autores, setAutores] = useState([]);
 
-  // Estados do formulário de criar/editar
-  const [modoEdicao, setModoEdicao] = useState(false);
-  const [livroEditando, setLivroEditando] = useState(null);
+  // Formulário de CRIAR (não editar!)
   const [formulario, setFormulario] = useState({
     titulo: '',
     autorId: '',
-    disponivel: true,
-    // editora: '',
-    // idioma: '',
-    // numeroPaginas: '',
-    // anoPublicacao: ''
+    disponivel: true
   });
 
-  // Estados do upload de imagem
+  // Upload de imagem
   const [livroSelecionado, setLivroSelecionado] = useState('');
   const [arquivoImagem, setArquivoImagem] = useState(null);
   const [enviandoImagem, setEnviandoImagem] = useState(false);
 
-  // ==================== CARREGAR DADOS INICIAIS ====================
+  // Carregar dados iniciais
   useEffect(() => {
     const currentUser = getCurrentUser();
     setUser(currentUser);
@@ -46,18 +41,10 @@ function Admin({ onLogout }) {
     carregarAutores();
   }, []);
 
-  // ==================== FUNÇÕES DE CARREGAMENTO ====================
   async function carregarLivros() {
     try {
       setCarregando(true);
       const dados = await buscarTodosLivros();
-
-      // PARA DEBUGAR:
-      console.log('Tipo dos dados:', typeof dados);
-      console.log('É array?', Array.isArray(dados));
-      console.log('Primeiro item:', dados[0]);
-      console.log('Chaves do primeiro item:', Object.keys(dados[0]));
-
       setLivros(dados);
     } catch (error) {
       mostrarMensagem('erro', 'Erro ao carregar livros: ' + error.message);
@@ -75,13 +62,11 @@ function Admin({ onLogout }) {
     }
   }
 
-  // ==================== FUNÇÕES DE MENSAGEM ====================
   function mostrarMensagem(tipo, texto) {
     setMensagem({ tipo, texto });
     setTimeout(() => setMensagem({ tipo: '', texto: '' }), 5000);
   }
 
-  // ==================== FUNÇÕES DO FORMULÁRIO ====================
   function handleInputChange(e) {
     const { name, value, type, checked } = e.target;
     setFormulario({
@@ -94,62 +79,12 @@ function Admin({ onLogout }) {
     setFormulario({
       titulo: '',
       autorId: '',
-      disponivel: true,
-      // editora: '',
-      // idioma: '',
-      // numeroPaginas: '',
-      // anoPublicacao: ''
+      disponivel: true
     });
-    setModoEdicao(false);
-    setLivroEditando(null);
   }
 
   // ==================== CRIAR NOVO LIVRO ====================
   async function handleCriarLivro(e) {
-    e.preventDefault();
-
-
-    const livroParaCriar = {  
-      titulo: formulario.titulo,
-      autorId: parseInt(formulario.autorId),
-      disponivel: formulario.disponivel,
-      // descricao: {
-      //   editora: formulario.editora || null,
-      //   idioma: formulario.idioma || null,
-      //   numeroPaginas: formulario.numeroPaginas ? parseInt(formulario.numeroPaginas) : null,
-      //   anoPublicacao: formulario.anoPublicacao ? parseInt(formulario.anoPublicacao) : null
-      // }
-    };
-
-    console.log('Criando:', livroParaCriar);
-
-    try {
-      await criarLivro(livroParaCriar);  // ← Use o mesmo nome aqui!
-      mostrarMensagem('sucesso', '✅ Livro criado!');
-      limparFormulario();
-      carregarLivros();
-    } catch (error) {
-      mostrarMensagem('erro', 'Erro: ' + error.message);
-    }
-  }
-  // ==================== EDITAR LIVRO ====================
-  function iniciarEdicao(livro) {
-    setModoEdicao(true);
-    setLivroEditando(livro);
-    setFormulario({
-      titulo: livro.titulo || '',
-      autorId: livro.autorId || '',
-      disponivel: livro.disponivel,
-      // editora: livro.descricao?.editora || '',
-      // idioma: livro.descricao?.idioma || '',
-      // numeroPaginas: livro.descricao?.numeroPaginas || '',
-      // anoPublicacao: livro.descricao?.anoPublicacao || ''
-    });
-    // Scroll para o formulário
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  async function handleEditarLivro(e) {
     e.preventDefault();
 
     const erros = validarLivro(formulario);
@@ -158,24 +93,25 @@ function Admin({ onLogout }) {
       return;
     }
 
-    const dadosParaEditar = {
-      id: livroEditando.id,        
+    const livroParaCriar = {
       titulo: formulario.titulo,
       autorId: parseInt(formulario.autorId),
-      disponivel: formulario.disponivel,
-      imageUrl: livroEditando.imageUrl || '',
+      disponivel: formulario.disponivel
     };
 
-    console.log('📤 Editando:', dadosParaEditar);
-
     try {
-      await editarLivro(livroEditando.id, dadosParaEditar);
-      mostrarMensagem('sucesso', '✅ Livro atualizado!');
+      await criarLivro(livroParaCriar);
+      mostrarMensagem('sucesso', '✅ Livro criado com sucesso!');
       limparFormulario();
       carregarLivros();
     } catch (error) {
-      mostrarMensagem('erro', 'Erro: ' + error.message);
+      mostrarMensagem('erro', 'Erro ao criar livro: ' + error.message);
     }
+  }
+
+  // ==================== NAVEGAR PARA EDITAR ====================
+  function handleIrParaEditar(livroId) {
+    navigate(`/admin/editar/${livroId}`);
   }
 
   // ==================== DELETAR LIVRO ====================
@@ -241,7 +177,6 @@ function Admin({ onLogout }) {
     }
   }
 
-  // ==================== RENDERIZAÇÃO ====================
   return (
     <div className="admin-container">
       {/* HEADER */}
@@ -254,18 +189,18 @@ function Admin({ onLogout }) {
       </header>
 
       <main className="admin-main">
-        {/* MENSAGEM DE FEEDBACK */}
+        {/* MENSAGEM */}
         {mensagem.texto && (
           <div className={`mensagem mensagem-${mensagem.tipo}`}>
             {mensagem.texto}
           </div>
         )}
 
-        {/* ==================== SEÇÃO: CRIAR/EDITAR LIVRO ==================== */}
-        <section className="admin-section">
-          <h2>{modoEdicao ? '✏️ Editar Livro' : '➕ Criar Novo Livro'}</h2>
-
-          <form onSubmit={modoEdicao ? handleEditarLivro : handleCriarLivro} className="form-livro">
+        {/* ==================== SEÇÃO: CRIAR LIVRO ==================== */}
+        {/* <section className="admin-section">
+          <h2>➕ Criar Novo Livro</h2>
+          
+          <form onSubmit={handleCriarLivro} className="form-livro">
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="titulo">Título *</label>
@@ -279,59 +214,7 @@ function Admin({ onLogout }) {
                   required
                 />
               </div>
-              {/* Ano de Publicação */}
-              {/* <div className="form-group">
-                <label htmlFor="anoPublicacao">Ano de Publicação</label>
-                <input
-                  type="number"
-                  id="anoPublicacao"
-                  name="anoPublicacao"
-                  value={formulario.anoPublicacao}
-                  onChange={handleInputChange}
-                  placeholder="Ex: 1899"
-                />
-              </div> */}
 
-              {/* Editora */}
-              {/* <div className="form-group">
-                <label htmlFor="editora">Editora</label>
-                <input
-                  type="text"
-                  id="editora"
-                  name="editora"
-                  value={formulario.editora}
-                  onChange={handleInputChange}
-                  placeholder="Ex: FTD"
-                />
-              </div> */}
-
-              {/* Idioma */}
-              {/* <div className="form-group">
-                <label htmlFor="idioma">Idioma</label>
-                <input
-                  type="text"
-                  id="idioma"
-                  name="idioma"
-                  value={formulario.idioma}
-                  onChange={handleInputChange}
-                  placeholder="Ex: Português"
-                />
-              </div> */}
-
-              {/* Número de Páginas */}
-              {/* <div className="form-group">
-                <label htmlFor="numeroPaginas">Número de Páginas</label>
-                <input
-                  type="number"
-                  id="numeroPaginas"
-                  name="numeroPaginas"
-                  value={formulario.numeroPaginas}
-                  onChange={handleInputChange}
-                  placeholder="Ex: 232"
-                />
-              </div> */}
-            </div>
-            <div className="form-row">
               <div className="form-group">
                 <label htmlFor="autorId">Autor *</label>
                 <select
@@ -363,28 +246,16 @@ function Admin({ onLogout }) {
               </label>
             </div>
 
-            <div className="form-buttons">
-              <button type="submit" className="btn btn-primary">
-                {modoEdicao ? '💾 Salvar Alterações' : '➕ Criar Livro'}
-              </button>
-
-              {modoEdicao && (
-                <button
-                  type="button"
-                  onClick={limparFormulario}
-                  className="btn btn-secondary"
-                >
-                  ❌ Cancelar
-                </button>
-              )}
-            </div>
+            <button type="submit" className="btn btn-primary">
+              ➕ Criar Livro
+            </button>
           </form>
-        </section>
+        </section> */}
 
         {/* ==================== SEÇÃO: UPLOAD DE IMAGEM ==================== */}
-        <section className="admin-section">
+        {/* <section className="admin-section">
           <h2>📤 Upload de Imagem</h2>
-
+          
           <form onSubmit={handleUploadImagem} className="form-upload">
             <div className="form-group">
               <label htmlFor="livroSelect">Selecione o Livro</label>
@@ -417,20 +288,20 @@ function Admin({ onLogout }) {
               )}
             </div>
 
-            <button
-              type="submit"
+            <button 
+              type="submit" 
               className="btn btn-primary"
               disabled={enviandoImagem}
             >
               {enviandoImagem ? '📤 Enviando...' : '📤 Enviar Imagem'}
             </button>
           </form>
-        </section>
+        </section> */}
 
         {/* ==================== SEÇÃO: LISTA DE LIVROS ==================== */}
         <section className="admin-section">
           <h2>📚 Lista de Livros ({livros.length})</h2>
-
+          
           {carregando ? (
             <p>Carregando livros...</p>
           ) : (
@@ -439,8 +310,8 @@ function Admin({ onLogout }) {
                 <div key={livro.id} className="livro-card-admin">
                   {/* IMAGEM */}
                   {livro.imageUrl ? (
-                    <img
-                      src={livro.imageUrl}
+                    <img 
+                      src={livro.imageUrl} 
                       alt={livro.titulo}
                       className="livro-imagem"
                     />
@@ -449,15 +320,11 @@ function Admin({ onLogout }) {
                       📖 Sem imagem
                     </div>
                   )}
-
+                  
                   {/* INFORMAÇÕES */}
                   <div className="livro-info">
                     <h3>{livro.titulo}</h3>
                     <p><strong>Autor:</strong> {livro.autor?.nome}</p>
-                    <p><strong>Ano de Publicação:</strong> {livro.descricao?.anoPublicacao}</p>
-                    <p><strong>Editora:</strong> {livro.descricao?.editora}</p>
-                    <p><strong>Idioma:</strong> {livro.descricao?.idioma}</p>
-                    <p><strong>Quantidade de Páginas:</strong> {livro.descricao?.numeroPaginas}</p>
                     <p>
                       <span className={`badge ${livro.disponivel ? 'disponivel' : 'indisponivel'}`}>
                         {livro.disponivel ? '✅ Disponível' : '❌ Indisponível'}
@@ -467,13 +334,13 @@ function Admin({ onLogout }) {
 
                   {/* AÇÕES */}
                   <div className="livro-acoes">
-                    <button
-                      onClick={() => iniciarEdicao(livro)}
+                    <button 
+                      onClick={() => handleIrParaEditar(livro.id)}
                       className="btn btn-edit"
                     >
                       ✏️ Editar
                     </button>
-                    <button
+                    <button 
                       onClick={() => handleDeletarLivro(livro.id, livro.titulo)}
                       className="btn btn-delete"
                     >
