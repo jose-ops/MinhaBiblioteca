@@ -197,7 +197,7 @@ function Admin({ onLogout }) {
         )}
 
         {/* ==================== SEÇÃO: CRIAR LIVRO ==================== */}
-        {/* <section className="admin-section">
+        <section className="admin-section">
           <h2>➕ Criar Novo Livro</h2>
           
           <form onSubmit={handleCriarLivro} className="form-livro">
@@ -250,7 +250,7 @@ function Admin({ onLogout }) {
               ➕ Criar Livro
             </button>
           </form>
-        </section> */}
+        </section> 
 
         {/* ==================== SEÇÃO: UPLOAD DE IMAGEM ==================== */}
         {/* <section className="admin-section">

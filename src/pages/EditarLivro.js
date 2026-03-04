@@ -4,36 +4,35 @@ import {
   buscarLivroPorId,
   buscarAutores,
   editarLivro,
-  validarLivro,
-  uploadImagem 
+  uploadImagem,  // ← ADICIONAR
+  validarLivro 
 } from '../Services/AdminService';
- import './Styles/EditarLivro.css';
+import './Styles/EditarLivro.css';
 
 function EditarLivro() {
-  const { id } = useParams(); // Pega o ID da URL
+  const { id } = useParams();
   const navigate = useNavigate();
 
   // Estados
   const [livro, setLivro] = useState(null);
-   const [livros, setLivros] = useState([]);
   const [autores, setAutores] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [salvando, setSalvando] = useState(false);
   const [mensagem, setMensagem] = useState({ tipo: '', texto: '' });
 
-    // Upload de imagem
-    const [livroSelecionado, setLivroSelecionado] = useState('');
-    const [arquivoImagem, setArquivoImagem] = useState(null);
-    const [enviandoImagem, setEnviandoImagem] = useState(false);
-
-  // Formulário
+  // Formulário de edição
   const [formulario, setFormulario] = useState({
     titulo: '',
     autorId: '',
     disponivel: true
   });
 
-  // Carregar dados do livro ao abrir a página
+  // ✅ NOVO: Upload de imagem
+  const [arquivoImagem, setArquivoImagem] = useState(null);
+  const [enviandoImagem, setEnviandoImagem] = useState(false);
+  const [previewImagem, setPreviewImagem] = useState(null);
+
+  // Carregar dados do livro
   useEffect(() => {
     carregarDados();
   }, [id]);
@@ -41,8 +40,6 @@ function EditarLivro() {
   async function carregarDados() {
     try {
       setCarregando(true);
-      
-      // Busca o livro e os autores em paralelo
       const [livroData, autoresData] = await Promise.all([
         buscarLivroPorId(id),
         buscarAutores()
@@ -50,60 +47,17 @@ function EditarLivro() {
 
       setLivro(livroData);
       setAutores(autoresData);
-
-      // Preenche o formulário com os dados do livro
       setFormulario({
         titulo: livroData.titulo || '',
         autorId: livroData.autorId || '',
         disponivel: livroData.disponivel
       });
-
     } catch (error) {
       mostrarMensagem('erro', 'Erro ao carregar livro: ' + error.message);
     } finally {
       setCarregando(false);
     }
   }
-
-    // ==================== UPLOAD DE IMAGEM ====================
-    function handleArquivoChange(e) {
-      const arquivo = e.target.files[0];
-      if (arquivo) {
-        if (!arquivo.type.startsWith('image/')) {
-          mostrarMensagem('erro', 'Por favor, selecione uma imagem válida');
-          return;
-        }
-        setArquivoImagem(arquivo);
-      }
-    }
-  
-    async function handleUploadImagem(e) {
-      e.preventDefault();
-  
-      if (!livroSelecionado) {
-        mostrarMensagem('erro', 'Selecione um livro');
-        return;
-      }
-  
-      if (!arquivoImagem) {
-        mostrarMensagem('erro', 'Selecione uma imagem');
-        return;
-      }
-  
-      try {
-        setEnviandoImagem(true);
-        await uploadImagem(livroSelecionado, arquivoImagem);
-        mostrarMensagem('sucesso', '📤 Imagem enviada com sucesso!');
-        setLivroSelecionado('');
-        setArquivoImagem(null);
-        document.getElementById('imageInput').value = '';
-        // carregarLivros();
-      } catch (error) {
-        mostrarMensagem('erro', 'Erro ao enviar imagem: ' + error.message);
-      } finally {
-        setEnviandoImagem(false);
-      }
-    }
 
   function mostrarMensagem(tipo, texto) {
     setMensagem({ tipo, texto });
@@ -118,23 +72,22 @@ function EditarLivro() {
     });
   }
 
+  // ==================== SALVAR ALTERAÇÕES ====================
   async function handleSalvar(e) {
     e.preventDefault();
 
-    // Validar
     const erros = validarLivro(formulario);
     if (erros.length > 0) {
       mostrarMensagem('erro', erros.join(', '));
       return;
     }
 
-    // Preparar dados para enviar
     const dadosParaEditar = {
       id: parseInt(id),
       titulo: formulario.titulo,
       autorId: parseInt(formulario.autorId),
       disponivel: formulario.disponivel,
-      imageUrl: livro.imageUrl || '' // Preserva a imagem
+      imageUrl: livro.imageUrl || ''
     };
 
     try {
@@ -142,16 +95,78 @@ function EditarLivro() {
       await editarLivro(id, dadosParaEditar);
       mostrarMensagem('sucesso', '✅ Livro atualizado com sucesso!');
       
-      // Volta para a página admin após 1 segundo
-      setTimeout(() => {
-        navigate('/admin');
-      }, 1000);
-
+      // Recarrega os dados (pra mostrar a imagem nova se tiver upload)
+      await carregarDados();
+      
     } catch (error) {
       mostrarMensagem('erro', 'Erro ao salvar: ' + error.message);
     } finally {
       setSalvando(false);
     }
+  }
+
+  // ==================== UPLOAD DE IMAGEM ====================
+  function handleArquivoChange(e) {
+    const arquivo = e.target.files[0];
+    if (!arquivo) return;
+
+    // Validar tipo
+    if (!arquivo.type.startsWith('image/')) {
+      mostrarMensagem('erro', 'Por favor, selecione uma imagem válida');
+      return;
+    }
+
+    // Validar tamanho (ex: max 5MB)
+    if (arquivo.size > 5 * 1024 * 1024) {
+      mostrarMensagem('erro', 'Imagem muito grande! Máximo 5MB');
+      return;
+    }
+
+    setArquivoImagem(arquivo);
+
+    // ✅ PREVIEW LOCAL (mostra antes de enviar)
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreviewImagem(reader.result);
+    };
+    reader.readAsDataURL(arquivo);
+  }
+
+  async function handleUploadImagem(e) {
+    e.preventDefault();
+
+    if (!arquivoImagem) {
+      mostrarMensagem('erro', 'Selecione uma imagem');
+      return;
+    }
+
+    try {
+      setEnviandoImagem(true);
+      
+      // ✅ Upload direto (não precisa selecionar livro!)
+      await uploadImagem(id, arquivoImagem);
+      
+      mostrarMensagem('sucesso', '📤 Imagem enviada com sucesso!');
+      
+      // Limpar form de upload
+      setArquivoImagem(null);
+      setPreviewImagem(null);
+      document.getElementById('imageInput').value = '';
+      
+      // Recarregar dados do livro (pra pegar a nova imageUrl)
+      await carregarDados();
+      
+    } catch (error) {
+      mostrarMensagem('erro', 'Erro ao enviar imagem: ' + error.message);
+    } finally {
+      setEnviandoImagem(false);
+    }
+  }
+
+  function handleCancelarUpload() {
+    setArquivoImagem(null);
+    setPreviewImagem(null);
+    document.getElementById('imageInput').value = '';
   }
 
   function handleCancelar() {
@@ -181,7 +196,7 @@ function EditarLivro() {
     <div className="editar-container">
       {/* HEADER */}
       <header className="editar-header">
-        <h1>✏️ Editar Livro</h1>
+        <h1>✏️ Editar Livro: {livro.titulo}</h1>
         <button onClick={handleCancelar} className="btn-voltar">
           ← Voltar para Admin
         </button>
@@ -195,137 +210,148 @@ function EditarLivro() {
           </div>
         )}
 
-        {/* PREVIEW DA IMAGEM */}
-        <div className="livro-preview">
-          {livro.imageUrl ? (
-            <img 
-              src={livro.imageUrl} 
-              alt={livro.titulo}
-              className="preview-imagem"
-            />
-          ) : (
-            <div className="preview-sem-imagem">
-              📖 Sem imagem
-            </div>
-          )}
-          <p className="preview-info">
-            ID: {livro.id} | 
-            Criado em: {new Date(livro.dataCriacao || Date.now()).toLocaleDateString()}
-          </p>
-        </div>
-
-        {/* ==================== SEÇÃO: UPLOAD DE IMAGEM ==================== */}
-         <section className="admin-section">
-          <h2>📤 Upload de Imagem</h2>
-          
-          <form onSubmit={handleUploadImagem} className="form-upload">
-            <div className="form-group">
-              <label htmlFor="livroSelect">Selecione o Livro</label>
-              <select
-                id="livroSelect"
-                value={livroSelecionado}
-                onChange={(e) => setLivroSelecionado(e.target.value)}
-                required
-              >
-                {/************   MODIFICAR AQUI  **************/}
-                 <option value="">-- Escolha um livro --</option>
-                {livros.map((livro) => (
-                  <option key={livro.id} value={livro.id}>
-                    {livro.titulo} - {livro.autor?.nome}
-                  </option>
-                ))} 
-              </select>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="imageInput">Selecione a Imagem</label>
-              <input
-                type="file"
-                id="imageInput"
-                accept="image/*"
-                onChange={handleArquivoChange}
-                required
-              />
-              {arquivoImagem && (
-                <p className="file-name">📁 {arquivoImagem.name}</p>
+        <div className="editar-layout">
+          {/* ==================== COLUNA ESQUERDA: IMAGEM ==================== */}
+          <aside className="editar-sidebar">
+            <h2>📸 Imagem do Livro</h2>
+            
+            {/* IMAGEM ATUAL */}
+            <div className="livro-preview">
+              {livro.imageUrl ? (
+                <img 
+                  src={livro.imageUrl} 
+                  alt={livro.titulo}
+                  className="preview-imagem"
+                />
+              ) : (
+                <div className="preview-sem-imagem">
+                  📖 Sem imagem
+                </div>
               )}
             </div>
 
-            <button 
-              type="submit" 
-              className="btn btn-primary"
-              disabled={enviandoImagem}
-            >
-              {enviandoImagem ? '📤 Enviando...' : '📤 Enviar Imagem'}
-            </button>
-          </form>
-        </section> 
+            {/* FORM DE UPLOAD */}
+            <form onSubmit={handleUploadImagem} className="form-upload">
+              <h3>Alterar Imagem</h3>
+              
+              <div className="form-group">
+                <label htmlFor="imageInput">Selecione nova imagem</label>
+                <input
+                  type="file"
+                  id="imageInput"
+                  accept="image/*"
+                  onChange={handleArquivoChange}
+                  disabled={enviandoImagem}
+                />
+              </div>
 
-        {/* FORMULÁRIO */}
-        <form onSubmit={handleSalvar} className="form-editar">
-          <div className="form-group">
-            <label htmlFor="titulo">Título *</label>
-            <input
-              type="text"
-              id="titulo"
-              name="titulo"
-              value={formulario.titulo}
-              onChange={handleInputChange}
-              placeholder="Ex: Dom Casmurro"
-              required
-            />
-          </div>
+              {/* PREVIEW DA NOVA IMAGEM */}
+              {previewImagem && (
+                <div className="preview-nova-imagem">
+                  <p>Preview:</p>
+                  <img src={previewImagem} alt="Preview" />
+                </div>
+              )}
 
-          <div className="form-group">
-            <label htmlFor="autorId">Autor *</label>
-            <select
-              id="autorId"
-              name="autorId"
-              value={formulario.autorId}
-              onChange={handleInputChange}
-              required
-            >
-              <option value="">-- Selecione um autor --</option>
-              {autores.map((autor) => (
-                <option key={autor.id} value={autor.id}>
-                  {autor.nome}
-                </option>
-              ))}
-            </select>
-          </div>
+              {/* BOTÕES DE UPLOAD */}
+              {arquivoImagem && (
+                <div className="upload-actions">
+                  <button 
+                    type="button"
+                    onClick={handleCancelarUpload}
+                    className="btn btn-secondary"
+                    disabled={enviandoImagem}
+                  >
+                    ❌ Cancelar
+                  </button>
+                  <button 
+                    type="submit"
+                    className="btn btn-primary"
+                    disabled={enviandoImagem}
+                  >
+                    {enviandoImagem ? '📤 Enviando...' : '📤 Enviar'}
+                  </button>
+                </div>
+              )}
+            </form>
 
-          <div className="form-group checkbox-group">
-            <label>
-              <input
-                type="checkbox"
-                name="disponivel"
-                checked={formulario.disponivel}
-                onChange={handleInputChange}
-              />
-              Disponível para empréstimo
-            </label>
-          </div>
+            {/* INFO DO LIVRO */}
+            <div className="livro-info">
+              <p><strong>ID:</strong> {livro.id}</p>
+              <p><strong>Autor:</strong> {livro.autor?.nome}</p>
+            </div>
+          </aside>
 
-          {/* BOTÕES */}
-          <div className="form-actions">
-            <button 
-              type="button" 
-              onClick={handleCancelar}
-              className="btn btn-secondary"
-              disabled={salvando}
-            >
-              ❌ Cancelar
-            </button>
+          {/* ==================== COLUNA DIREITA: FORMULÁRIO ==================== */}
+          <section className="editar-content">
+            <h2>📝 Informações do Livro</h2>
             
-            <button 
-              type="submit" 
-              className="btn btn-primary"
-              disabled={salvando}
-            >
-              {salvando ? '💾 Salvando...' : '💾 Salvar Alterações'}
-            </button>
-          </div>
-        </form>
+            <form onSubmit={handleSalvar} className="form-editar">
+              <div className="form-group">
+                <label htmlFor="titulo">Título *</label>
+                <input
+                  type="text"
+                  id="titulo"
+                  name="titulo"
+                  value={formulario.titulo}
+                  onChange={handleInputChange}
+                  placeholder="Ex: Dom Casmurro"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="autorId">Autor *</label>
+                <select
+                  id="autorId"
+                  name="autorId"
+                  value={formulario.autorId}
+                  onChange={handleInputChange}
+                  required
+                >
+                  <option value="">-- Selecione um autor --</option>
+                  {autores.map((autor) => (
+                    <option key={autor.id} value={autor.id}>
+                      {autor.nome}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group checkbox-group">
+                <label>
+                  <input
+                    type="checkbox"
+                    name="disponivel"
+                    checked={formulario.disponivel}
+                    onChange={handleInputChange}
+                  />
+                  Disponível para empréstimo
+                </label>
+              </div>
+
+              {/* BOTÕES */}
+              <div className="form-actions">
+                <button 
+                  type="button" 
+                  onClick={handleCancelar}
+                  className="btn btn-secondary"
+                  disabled={salvando}
+                >
+                  ❌ Cancelar
+                </button>
+                
+                <button 
+                  type="submit" 
+                  className="btn btn-primary"
+                  disabled={salvando}
+                >
+                  {salvando ? '💾 Salvando...' : '💾 Salvar Alterações'}
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
       </main>
     </div>
   );
