@@ -1,10 +1,10 @@
-# 📚 Sistema de Biblioteca - Frontend
+# Sistema de Biblioteca - Frontend
 
 Interface web desenvolvida em React para gerenciamento de biblioteca com sistema de autenticação, controle de acesso por roles (Admin/User) e visualização de livros.
 
 ---
 
-## 🚀 Tecnologias Utilizadas
+## Tecnologias Utilizadas
 
 ### Framework e Bibliotecas
 - **React 18** - Biblioteca JavaScript para UI
@@ -91,26 +91,26 @@ A aplicação estará disponível em: `http://localhost:3000`
 
 ---
 
-## 🎯 Funcionalidades
+## Funcionalidades
 
-### 👤 **Usuário Comum (User)**
-- ✅ Login e autenticação
-- ✅ Visualizar catálogo completo de livros
-- ✅ Ver detalhes dos livros (título, autor, ano, disponibilidade)
-- ✅ Ver imagens das capas dos livros
-- ✅ Logout
+###  **Usuário Comum (User)**
+-  Login e autenticação
+-  Visualizar catálogo completo de livros
+-  Ver detalhes dos livros (título, autor, ano, disponibilidade)
+-  Ver imagens das capas dos livros
+-  Logout
 
-### 🔐 **Administrador (Admin)**
-- ✅ Todas as funcionalidades de usuário comum
-- ✅ Criar novos livros
-- ✅ Editar livros existentes
-- ✅ Deletar livros
-- ✅ Upload de imagens de capas (AWS S3)
-- ✅ Visualizar lista completa com status de imagens
+###  **Administrador (Admin)**
+-  Todas as funcionalidades de usuário comum
+-  Criar novos livros
+-  Editar livros existentes
+-  Deletar livros
+-  Upload de imagens de capas (AWS S3)
+-  Visualizar lista completa com status de imagens
 
 ---
 
-## 🔐 Sistema de Autenticação
+##  Sistema de Autenticação
 
 ### Fluxo de Login
 
@@ -144,7 +144,7 @@ localStorage.getItem('user')
 
 ---
 
-## 📱 Páginas da Aplicação
+##  Páginas da Aplicação
 
 ### **1. Login (`/login`)**
 - Formulário de autenticação
@@ -179,12 +179,12 @@ localStorage.getItem('user')
   - Imagem da capa (ou placeholder se não tiver)
   - Informações completas
   - Botões de ação:
-    - ✏️ Editar (preenche formulário)
-    - 🗑️ Deletar (com confirmação)
+    -  Editar (preenche formulário)
+    -  Deletar (com confirmação)
 
 ---
 
-## 🛠️ Services
+##  Services
 
 ### **LoginServico.js**
 
@@ -239,7 +239,7 @@ function validarLivro(livro)
 
 ---
 
-## 🎨 Diferenças Visuais
+##  Diferenças Visuais
 
 ### **Home (User) - Gradiente Roxo**
 ```css
@@ -253,7 +253,7 @@ background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
 
 ---
 
-## 🔄 Fluxo de Dados
+##  Fluxo de Dados
 
 ### **Criar Livro (Admin)**
 ```
@@ -287,7 +287,7 @@ background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
 
 ---
 
-## 🎯 Componentes Principais
+##  Componentes Principais
 
 ### **App.js**
 - Gerencia qual página mostrar (Login, Home ou Admin)
@@ -393,17 +393,17 @@ A aplicação é totalmente responsiva:
 
 ---
 
-## 🔒 Segurança
+##  Segurança
 
-- ✅ Tokens JWT para autenticação
-- ✅ Headers Authorization em todas as requisições autenticadas
-- ✅ Proteção de rotas (Admin só acessa Admin)
-- ✅ Validação de campos no frontend
-- ✅ Sanitização de inputs
+-  Tokens JWT para autenticação
+-  Headers Authorization em todas as requisições autenticadas
+-  Proteção de rotas (Admin só acessa Admin)
+-  Validação de campos no frontend
+-  Sanitização de inputs
 
 ---
 
-## 🚀 Deploy
+##  Deploy
 
 ### Build para Produção
 
@@ -428,7 +428,7 @@ const API_URL = process.env.REACT_APP_API_URL;
 
 ---
 
-## 📝 Próximas Melhorias
+##  Próximas Melhorias
 
 - [ ] Adicionar paginação na lista de livros
 - [ ] Implementar busca/filtros
@@ -439,12 +439,7 @@ const API_URL = process.env.REACT_APP_API_URL;
 
 ---
 
-## 📝 Licença
+##  Licença
 
 Este projeto foi desenvolvido para fins educacionais.
 
----
-
-## 👨‍💻 Desenvolvedor
-
-Desenvolvido com ❤️ usando React 18
