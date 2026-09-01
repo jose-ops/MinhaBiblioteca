@@ -143,7 +143,8 @@ export async function editarLivro(id, dadosAtualizados) {
 export async function editarDescricao(livroId, descricao) {
   try {
     const token = localStorage.getItem('token');
-    const response = await fetch(`https://localhost:7086/api/descricoes/${livroId}`, {
+    const id = descricao?.id ?? livroId;
+    const response = await fetch(`https://localhost:7086/api/descricao/${id}`, {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${token}`,

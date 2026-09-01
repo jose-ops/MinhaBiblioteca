@@ -22,7 +22,7 @@ const LivroService = {
                 id: livro.id,
                 titulo: livro.titulo,
                 imagemUrl: livro.imageUrl,
-                anoPublicacao: livro.anoPublicacao,
+                anoPublicacao: livro.descricao ? livro.descricao.anoPublicacao : undefined,
                 disponivel: livro.disponivel,
                 autor: livro.autor,
                 nacionalidade: livro.autor ? livro.autor.nacionalidade : 'Desconhecida'
