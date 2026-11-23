@@ -1,8 +1,49 @@
-/* Admin.css */
+/* Wrapper do label + botão */
+.form-group-with-action {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
 
-.admin-container {
-  min-height: 100vh;
-  background: #f5f5f5;
+/* Label sem flex (só o texto) */
+.form-group-with-action label {
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+/* Botão de adicionar */
+.btn-link {
+  background: none;
+  border: none;
+  color: #f5576c;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 4px;
+  white-space: nowrap; /* ← Importante! */
+}
+
+.btn-link:hover {
+  color: #d4486d;
+  background: rgba(245, 87, 108, 0.1);
+  text-decoration: underline;
+}
+
+.btn-link:active {
+  transform: scale(0.95);
+}
+
+/* Labels normais (sem botão) */
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #333;
 }
 
 /* ==================== HEADER ==================== */

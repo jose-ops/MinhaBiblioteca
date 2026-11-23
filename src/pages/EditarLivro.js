@@ -279,6 +279,7 @@ function EditarLivro() {
             <div className="livro-info">
               <p><strong>ID:</strong> {livro.id}</p>
               <p><strong>Autor:</strong> {livro.autor?.nome}</p>
+              <p><strong>Nacionalidade:</strong> {livro.autor?.nacionalidade}</p>
             </div>
           </aside>
 
