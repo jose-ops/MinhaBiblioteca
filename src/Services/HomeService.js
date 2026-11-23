@@ -1,14 +1,17 @@
-const token = localStorage.getItem("token");
+export async function buscarLivros() {
+  const token = localStorage.getItem("token");
 
-
-
-const response = await fetch('https://localhost:7086/api/livros', {
+  const response = await fetch('https://localhost:7086/api/livros', {
     headers: {
-        'Authorization': `Bearer ${token}`  // Envia o token
+      'Authorization': `Bearer ${token}`
     }
-});
+  });
 
-const livros = await response.json();
+  if (!response.ok) {
+    throw new Error('Erro ao buscar livros');
+  }
 
-console.log(livros);
-
+  const livros = await response.json();
+  console.log(livros);
+  return livros;
+}

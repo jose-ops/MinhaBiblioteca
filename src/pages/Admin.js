@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getCurrentUser, logout } from '../Services/LoginService';
 import { 
@@ -6,7 +6,6 @@ import {
   buscarAutores,
   criarLivro, 
   deletarLivro, 
-  uploadImagem,
   validarLivro 
 } from '../Services/AdminService';
 import './Styles/Admin.css';
@@ -28,20 +27,13 @@ function Admin({ onLogout }) {
     disponivel: true
   });
 
-  // Upload de imagem
-  const [livroSelecionado, setLivroSelecionado] = useState('');
-  const [arquivoImagem, setArquivoImagem] = useState(null);
-  const [enviandoImagem, setEnviandoImagem] = useState(false);
-
   // Carregar dados iniciais
-  useEffect(() => {
-    const currentUser = getCurrentUser();
-    setUser(currentUser);
-    carregarLivros();
-    carregarAutores();
+  const mostrarMensagem = useCallback((tipo, texto) => {
+    setMensagem({ tipo, texto });
+    setTimeout(() => setMensagem({ tipo: '', texto: '' }), 5000);
   }, []);
 
-  async function carregarLivros() {
+  const carregarLivros = useCallback(async () => {
     try {
       setCarregando(true);
       const dados = await buscarTodosLivros();
@@ -51,21 +43,23 @@ function Admin({ onLogout }) {
     } finally {
       setCarregando(false);
     }
-  }
+  }, [mostrarMensagem]);
 
-  async function carregarAutores() {
+  const carregarAutores = useCallback(async () => {
     try {
       const dados = await buscarAutores();
       setAutores(dados);
     } catch (error) {
       console.error('Erro ao carregar autores:', error);
     }
-  }
+  }, []);
 
-  function mostrarMensagem(tipo, texto) {
-    setMensagem({ tipo, texto });
-    setTimeout(() => setMensagem({ tipo: '', texto: '' }), 5000);
-  }
+  useEffect(() => {
+    const currentUser = getCurrentUser();
+    setUser(currentUser);
+    carregarLivros();
+    carregarAutores();
+  }, [carregarLivros, carregarAutores]);
 
   function handleInputChange(e) {
     const { name, value, type, checked } = e.target;
@@ -126,46 +120,6 @@ function Admin({ onLogout }) {
       carregarLivros();
     } catch (error) {
       mostrarMensagem('erro', 'Erro ao deletar livro: ' + error.message);
-    }
-  }
-
-  // ==================== UPLOAD DE IMAGEM ====================
-  function handleArquivoChange(e) {
-    const arquivo = e.target.files[0];
-    if (arquivo) {
-      if (!arquivo.type.startsWith('image/')) {
-        mostrarMensagem('erro', 'Por favor, selecione uma imagem válida');
-        return;
-      }
-      setArquivoImagem(arquivo);
-    }
-  }
-
-  async function handleUploadImagem(e) {
-    e.preventDefault();
-
-    if (!livroSelecionado) {
-      mostrarMensagem('erro', 'Selecione um livro');
-      return;
-    }
-
-    if (!arquivoImagem) {
-      mostrarMensagem('erro', 'Selecione uma imagem');
-      return;
-    }
-
-    try {
-      setEnviandoImagem(true);
-      await uploadImagem(livroSelecionado, arquivoImagem);
-      mostrarMensagem('sucesso', '📤 Imagem enviada com sucesso!');
-      setLivroSelecionado('');
-      setArquivoImagem(null);
-      document.getElementById('imageInput').value = '';
-      carregarLivros();
-    } catch (error) {
-      mostrarMensagem('erro', 'Erro ao enviar imagem: ' + error.message);
-    } finally {
-      setEnviandoImagem(false);
     }
   }
 
@@ -251,52 +205,6 @@ function Admin({ onLogout }) {
             </button>
           </form>
         </section> 
-
-        {/* ==================== SEÇÃO: UPLOAD DE IMAGEM ==================== */}
-        {/* <section className="admin-section">
-          <h2>📤 Upload de Imagem</h2>
-          
-          <form onSubmit={handleUploadImagem} className="form-upload">
-            <div className="form-group">
-              <label htmlFor="livroSelect">Selecione o Livro</label>
-              <select
-                id="livroSelect"
-                value={livroSelecionado}
-                onChange={(e) => setLivroSelecionado(e.target.value)}
-                required
-              >
-                <option value="">-- Escolha um livro --</option>
-                {livros.map((livro) => (
-                  <option key={livro.id} value={livro.id}>
-                    {livro.titulo} - {livro.autor?.nome}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="imageInput">Selecione a Imagem</label>
-              <input
-                type="file"
-                id="imageInput"
-                accept="image/*"
-                onChange={handleArquivoChange}
-                required
-              />
-              {arquivoImagem && (
-                <p className="file-name">📁 {arquivoImagem.name}</p>
-              )}
-            </div>
-
-            <button 
-              type="submit" 
-              className="btn btn-primary"
-              disabled={enviandoImagem}
-            >
-              {enviandoImagem ? '📤 Enviando...' : '📤 Enviar Imagem'}
-            </button>
-          </form>
-        </section> */}
 
         {/* ==================== SEÇÃO: LISTA DE LIVROS ==================== */}
         <section className="admin-section">

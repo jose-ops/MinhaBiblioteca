@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   buscarLivroPorId,
@@ -32,12 +32,12 @@ function EditarLivro() {
   const [enviandoImagem, setEnviandoImagem] = useState(false);
   const [previewImagem, setPreviewImagem] = useState(null);
 
-  // Carregar dados do livro
-  useEffect(() => {
-    carregarDados();
-  }, [id]);
+  const mostrarMensagem = useCallback((tipo, texto) => {
+    setMensagem({ tipo, texto });
+    setTimeout(() => setMensagem({ tipo: '', texto: '' }), 5000);
+  }, []);
 
-  async function carregarDados() {
+  const carregarDados = useCallback(async () => {
     try {
       setCarregando(true);
       const [livroData, autoresData] = await Promise.all([
@@ -57,12 +57,12 @@ function EditarLivro() {
     } finally {
       setCarregando(false);
     }
-  }
+  }, [id, mostrarMensagem]);
 
-  function mostrarMensagem(tipo, texto) {
-    setMensagem({ tipo, texto });
-    setTimeout(() => setMensagem({ tipo: '', texto: '' }), 5000);
-  }
+  // Carregar dados do livro
+  useEffect(() => {
+    carregarDados();
+  }, [id, carregarDados]);
 
   function handleInputChange(e) {
     const { name, value, type, checked } = e.target;
